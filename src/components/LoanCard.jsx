@@ -6,9 +6,22 @@ export default function LoanCard({ loan, payments, onDelete, onAddPayment, onVie
   const [payAmount, setPayAmount] = useState('');
   const [payDate, setPayDate] = useState(new Date().toISOString().split('T')[0]);
 
-  const totalPaid = payments.reduce((sum, p) => sum + p.amount, 0);
-  const currentBalance = Math.max(0, loan.initialAmount - totalPaid);
-  const progressPercent = Math.min(100, (totalPaid / loan.initialAmount) * 100);
+  const schedule = loan.schedule || [];
+  const historicalPaid = schedule
+    .filter(row => row.status.includes('PAGA'))
+    .reduce((sum, row) => {
+      const valStr = row.valor.replace('R$', '').replace(/\./g, '').replace(',', '.').trim();
+      return sum + (parseFloat(valStr) || 0);
+    }, 0);
+
+  const manualPaid = payments.reduce((sum, p) => sum + p.amount, 0);
+  const totalPaid = historicalPaid + manualPaid;
+
+  const currentBalance = Math.max(0, loan.initialAmount - manualPaid);
+  
+  // To avoid NaN, check if initialAmount + historicalPaid is > 0
+  const baseDebt = loan.initialAmount + historicalPaid;
+  const progressPercent = baseDebt > 0 ? Math.min(100, (totalPaid / baseDebt) * 100) : 0;
 
   const handlePaySubmit = (e) => {
     e.preventDefault();

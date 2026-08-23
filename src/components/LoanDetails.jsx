@@ -6,11 +6,22 @@ export default function LoanDetails({ loan, payments, onBack }) {
 
   // If we have an embedded schedule (from PDF parsing), we use it. Otherwise, empty.
   const schedule = loan.schedule || [];
-  
-  const totalPaid = payments.reduce((sum, p) => sum + p.amount, 0);
-  const currentBalance = Math.max(0, loan.initialAmount - totalPaid);
-  
-  // Calculate end date simply by adding installments in months to the start date
+  // Calculate historical payments from the schedule (summing 'valor' of 'PAGA' parcels)
+  const historicalPaid = schedule
+    .filter(row => row.status.includes('PAGA'))
+    .reduce((sum, row) => {
+      const valStr = row.valor.replace('R$', '').replace(/\./g, '').replace(',', '.').trim();
+      return sum + (parseFloat(valStr) || 0);
+    }, 0);
+
+  const manualPaid = payments.reduce((sum, p) => sum + p.amount, 0);
+  const totalPaid = historicalPaid + manualPaid;
+
+  // The remaining balance can be the currentBalance from the PDF minus any new manual payments
+  let currentBalance = loan.initialAmount;
+  // If we have a schedule, the loan's initialAmount was set to the 'Saldo Devedor Atualizado' in the parser
+  // So the real balance is that minus manual payments
+  currentBalance = Math.max(0, loan.initialAmount - manualPaid);
   const startDateObj = new Date(loan.startDate);
   const endDateObj = new Date(startDateObj);
   endDateObj.setMonth(endDateObj.getMonth() + loan.installments);
