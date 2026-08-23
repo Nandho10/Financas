@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Trash2, Plus, Calendar, TrendingUp } from 'lucide-react';
 
-export default function LoanCard({ loan, payments, onDelete, onAddPayment }) {
+export default function LoanCard({ loan, payments, onDelete, onAddPayment, onViewDetails }) {
   const [showPayModal, setShowPayModal] = useState(false);
   const [payAmount, setPayAmount] = useState('');
   const [payDate, setPayDate] = useState(new Date().toISOString().split('T')[0]);
