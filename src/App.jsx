@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import ErrorBoundary from './components/ErrorBoundary';
 import { LayoutDashboard, Sliders, RefreshCw, Landmark, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import FileUploader from './components/FileUploader';
 import TransactionTable from './components/TransactionTable';
